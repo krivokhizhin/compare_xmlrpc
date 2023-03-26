@@ -1,3 +1,3 @@
 [submodule "compare_xmlrpc/aioserver"]
 	path = compare_xmlrpc/aioserver
-	url = ssh://git@git:/home/git/aioserver.git/aioserver
+	url = ssh://git@git:/home/git/aioserver.git
