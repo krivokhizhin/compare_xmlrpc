@@ -1,8 +1,8 @@
 import asyncio
 
-# from server import AsyncPoolXMLRPCServer
-from ..aioserver.xmlrpc.server import AsyncXMLRPCServer
-from examples.load import load
+from .aioserver.aioserver.xmlrpc.server import AsyncXMLRPCServer
+from .aioserver.aioserver.xmlrpc.pool_server import AsyncPoolXMLRPCServer
+from .load import load
 
 
 def parse_args():
@@ -21,8 +21,10 @@ def parse_args():
 async def main():
     args = parse_args()
 
-    # server = AsyncPoolXMLRPCServer((args.host, args.port), args.max_workers)
-    server = AsyncXMLRPCServer((args.host, args.port))
+    if args.max_workers:
+        server = AsyncPoolXMLRPCServer((args.host, args.port), args.max_workers)
+    else:
+        server = AsyncXMLRPCServer((args.host, args.port))
     server.register_introspection_functions()
     server.register_function(load)
 
