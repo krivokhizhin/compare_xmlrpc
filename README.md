@@ -27,10 +27,10 @@ $ git clone https://github.com/krivokhizhin/asyncxmlrpc.git
 
 cd
 
-python3 sync_tools/serve_forever.py
-python3 serve_forever.py
+python3 -m compare_xmlrpc.serve_forever
+python3 -m compare_xmlrpc.aserve_forever
 
-python3 sync_tools/client.py 250000
-python3 -m timeit 'from sync_tools.client import RpcClient;  RpcClient.start_for_timeit(250000, "localhost", 8000, 60, 100, 20)'
+python3 -m compare_xmlrpc.client load 250000
+python3 -m timeit 'from compare_xmlrpc.client import RpcClient;  RpcClient.start_for_timeit("localhost", 6677, 60, 100, 20, "load", 250000)'
 
 ps f
