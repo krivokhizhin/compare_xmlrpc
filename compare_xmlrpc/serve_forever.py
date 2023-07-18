@@ -1,5 +1,5 @@
 from xmlrpc.server import SimpleXMLRPCServer
-from .load import load
+from load import load
 
 
 def parse_args():
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
         server = ForkingXMLRPCServer((args.host, args.port))
     elif args.processes > 1:
-        from .pool_server import PoolXMLRPCServer
+        from pool_server import PoolXMLRPCServer
 
         server = PoolXMLRPCServer((args.host, args.port), args.processes)
     else:

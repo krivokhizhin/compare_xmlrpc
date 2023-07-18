@@ -27,10 +27,13 @@ $ git clone https://github.com/krivokhizhin/asyncxmlrpc.git
 
 cd
 
-python3 -m compare_xmlrpc.serve_forever
-python3 -m compare_xmlrpc.aserve_forever
+docker run -it --network="host" --name rpc-server-simple comparexmlrpc python3 serve_forever.py
+docker run -it --network="host" --name rpc-server-fork10 comparexmlrpc python3 serve_forever.py --processes 10 --fork
+docker run -it --network="host" --name rpc-server-pool10 comparexmlrpc python3 serve_forever.py --processes 10
 
-python3 -m compare_xmlrpc.client load 250000
-python3 -m timeit 'from compare_xmlrpc.client import RpcClient;  RpcClient.start_for_timeit("localhost", 6677, 60, 100, 20, "load", 250000)'
+docker run -it --network="host" --name rpc-server-async comparexmlrpc python3 aserve_forever.py
+docker run -it --network="host" --name rpc-server-async10 comparexmlrpc python3 aserve_forever.py --max_workers 10
+
+docker run -it --network="host" --name rpc-client comparexmlrpc python3 -m timeit -n 3 -s 'from client import RpcClient'  'RpcClient.start_for_timeit("localhost", 6677, 60, 240, 20, "load", 250000)'
 
 ps f

@@ -1,8 +1,8 @@
 import asyncio
 
-from .aioserver.aioserver.xmlrpc.server import AsyncXMLRPCServer
-from .aioserver.aioserver.xmlrpc.pool_server import AsyncPoolXMLRPCServer
-from .load import load
+from aioserver.aioserver.xmlrpc.server import AsyncXMLRPCServer
+from aioserver.aioserver.xmlrpc.pool_server import AsyncPoolXMLRPCServer
+from load import load
 
 
 def parse_args():
