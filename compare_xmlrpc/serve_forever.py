@@ -1,4 +1,6 @@
 from xmlrpc.server import SimpleXMLRPCServer
+
+from const import *
 from load import load
 
 
@@ -6,12 +8,12 @@ def parse_args():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', default='localhost', type=str,
-                        help='Specify server address [default: localhost]')
-    parser.add_argument('--port', default=6677, type=int,
-                        help='Specify alternate port [default: 6677]')
-    parser.add_argument('--processes', type=int, default=1,
-                       help='Number of worker processes to process the requests')
+    parser.add_argument('--host', default=HOST, type=str,
+                        help=f'Specify server address [default: {HOST}]')
+    parser.add_argument('--port', default=PORT, type=int,
+                        help=f'Specify alternate port [default: {PORT}]')
+    parser.add_argument('--processes', type=int, default=SYNC_MAX_WORKERS,
+                        help=f'Number of worker processes to process the requests [default: {SYNC_MAX_WORKERS}]')
     parser.add_argument('--fork', action='store_true',
                        help='Fork a new subprocess to process the request')
     return parser.parse_args()

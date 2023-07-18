@@ -5,11 +5,13 @@ from operator import methodcaller
 from typing import Any, List
 from xmlrpc.client import ServerProxy
 
+from const import HOST, PORT, TIMEOUT, CALL_NUMBER, CLIENT_MAX_WORKERS
+
 
 class RpcClient:
 
     @staticmethod
-    def remote_call(host:str, port:int, method_name: str, *args, **kwargs) -> Any:
+    def remote_call(host: str, port: int, method_name: str, *args, **kwargs) -> Any:
         result = None
         procedure = methodcaller(method_name, *args)
         with ServerProxy(f'http://{host}:{port}') as proxy:
@@ -20,28 +22,40 @@ class RpcClient:
         return result
 
     @staticmethod
-    def start(host, port, timeout, number, max_workers, method_name, *args):
+    def start_for_timeit(host: str, port: int, timeout: int, number: int, max_workers: int, method_name: str, *args):
+        """
+        Executes rpc-calls to the specified method the specified number of times.
+
+        Args:
+            host: host address.
+            port: integer port number.
+            timeout: maximum number of seconds to wait rpc-call answer.
+            number: number of rpc-call.
+            max_workers: number of workers for rpc-calls.
+            method_name: method for rpc-calls.
+            *args: arguments of method for rpc-calls.
+        """
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            load_futures = [executor.submit(RpcClient.remote_call, host, port, method_name, *args, timeit=True) for _ in range(number)]
+            concurrent.futures.wait(load_futures, timeout)
+
+    @staticmethod
+    def start(host: str, port: int, timeout: int, number: int, max_workers: int, method_name: str, *args):
         duration = '-'
         exceptions = []
         max_workers = min(max_workers, number)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            start = time.time()
+            start_ts = time.time()
             load_futures = [executor.submit(RpcClient.remote_call, host, port, method_name, *args) for _ in range(number)]
             for future in concurrent.futures.as_completed(load_futures, timeout):
                 ex = future.exception()
                 if ex:
                     exceptions.append(ex)
             
-            duration = time.time() - start
+            duration = time.time() - start_ts
 
         return duration, exceptions
-
-    @staticmethod
-    def start_for_timeit(host, port, timeout, number, max_workers, method_name, *args):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            load_futures = [executor.submit(RpcClient.remote_call, host, port, method_name, *args, timeit=True) for _ in range(number)]
-            concurrent.futures.wait(load_futures, timeout)
     
     
 def parse_args():
@@ -50,16 +64,16 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('method', type=str, help='Calling method')
     parser.add_argument('args', nargs='*', help='Arguments, recognizes the types: int, float, bool and str (default)')
-    parser.add_argument('--host', default='localhost', type=str,
-                        help='Specify server address [default: localhost]')
-    parser.add_argument('--port', default=6677, type=int,
-                        help='Specify alternate port [default: 6677]')
-    parser.add_argument('--timeout', default=180, type=int,
-                        help='Specify the timeout for request [default: 180]')
-    parser.add_argument('--number', default=100, type=int,
-                        help='Specify the number of requests [default: 100]')
-    parser.add_argument('--max_workers', default=20, type=int,
-                        help='Specify maximum number of threads that can be used to execute [default: 20]')
+    parser.add_argument('--host', default=HOST, type=str,
+                        help=f'Specify server address [default: {HOST}]')
+    parser.add_argument('--port', default=PORT, type=int,
+                        help=f'Specify alternate port [default: {PORT}]')
+    parser.add_argument('--timeout', default=TIMEOUT, type=int,
+                        help=f'Specify the timeout for request [default: {TIMEOUT}]')
+    parser.add_argument('--number', default=CALL_NUMBER, type=int,
+                        help=f'Specify the number of requests [default: {CALL_NUMBER}]')
+    parser.add_argument('--max_workers', default=CLIENT_MAX_WORKERS, type=int,
+                        help=f'Specify maximum number of threads that can be used to execute [default: {CLIENT_MAX_WORKERS}]')
     
     return parser.parse_args()
 

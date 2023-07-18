@@ -1,6 +1,6 @@
 import sys
 if hasattr(sys, "set_int_max_str_digits"):
-    sys.set_int_max_str_digits(0)
+    sys.set_int_max_str_digits(0)  # disable the integer string conversion length limitation
 
 def load(n: int) -> str:
     fib1 = fib2 = 1
