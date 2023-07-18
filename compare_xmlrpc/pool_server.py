@@ -1,7 +1,7 @@
 import socket
 from multiprocessing import Pool
 from socketserver import TCPServer
-from xmlrpc.server import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatcher, SimpleXMLRPCServer
+from xmlrpc.server import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatcher
 
 
 def initializer(dispatcher, requestHandlerClass):    
