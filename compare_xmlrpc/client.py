@@ -5,57 +5,41 @@ from operator import methodcaller
 from typing import Any, List
 from xmlrpc.client import ServerProxy
 
-from const import HOST, PORT, TIMEOUT, CALL_NUMBER, CLIENT_MAX_WORKERS
+from const import *
 
+def remote_call(host: str, port: int, method_name: str, *args, **kwargs) -> Any:
+    result = None
+    procedure = methodcaller(method_name, *args)
+    with ServerProxy(f'http://{host}:{port}') as proxy:
+        result = procedure(proxy)
+    if not kwargs.get('timeit', False):
+        print('.', end='', flush=True)
 
-class RpcClient:
+    return result
 
-    @staticmethod
-    def remote_call(host: str, port: int, method_name: str, *args, **kwargs) -> Any:
-        result = None
-        procedure = methodcaller(method_name, *args)
-        with ServerProxy(f'http://{host}:{port}') as proxy:
-            result = procedure(proxy)
-        if not kwargs.get('timeit', False):
-            print('.', end='', flush=True)
+def start_for_timeit(method_name: str, *args, 
+                        host: str=HOST, port: int=PORT, timeout: int=TIMEOUT, 
+                        number: int=CALL_NUMBER, max_workers: int=CLIENT_MAX_WORKERS):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        load_futures = [executor.submit(remote_call, host, port, method_name, *args, timeit=True) for _ in range(number)]
+        concurrent.futures.wait(load_futures, timeout)
 
-        return result
+def start(host: str, port: int, timeout: int, number: int, max_workers: int, method_name: str, *args):
+    duration = '-'
+    exceptions = []
+    max_workers = min(max_workers, number)
 
-    @staticmethod
-    def start_for_timeit(host: str, port: int, timeout: int, number: int, max_workers: int, method_name: str, *args):
-        """
-        Executes rpc-calls to the specified method the specified number of times.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        start_ts = time.time()
+        load_futures = [executor.submit(remote_call, host, port, method_name, *args) for _ in range(number)]
+        for future in concurrent.futures.as_completed(load_futures, timeout):
+            ex = future.exception()
+            if ex:
+                exceptions.append(ex)
+        
+        duration = time.time() - start_ts
 
-        Args:
-            host: host address.
-            port: integer port number.
-            timeout: maximum number of seconds to wait rpc-call answer.
-            number: number of rpc-call.
-            max_workers: number of workers for rpc-calls.
-            method_name: method for rpc-calls.
-            *args: arguments of method for rpc-calls.
-        """
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            load_futures = [executor.submit(RpcClient.remote_call, host, port, method_name, *args, timeit=True) for _ in range(number)]
-            concurrent.futures.wait(load_futures, timeout)
-
-    @staticmethod
-    def start(host: str, port: int, timeout: int, number: int, max_workers: int, method_name: str, *args):
-        duration = '-'
-        exceptions = []
-        max_workers = min(max_workers, number)
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            start_ts = time.time()
-            load_futures = [executor.submit(RpcClient.remote_call, host, port, method_name, *args) for _ in range(number)]
-            for future in concurrent.futures.as_completed(load_futures, timeout):
-                ex = future.exception()
-                if ex:
-                    exceptions.append(ex)
-            
-            duration = time.time() - start_ts
-
-        return duration, exceptions
+    return duration, exceptions
     
     
 def parse_args():
@@ -116,5 +100,5 @@ def classify_args(*args: List[Any]) -> list:
 if __name__ == '__main__':
     args = parse_args()
     method_args = classify_args(*args.args)
-    duration, errors = RpcClient.start(args.host, args.port, args.timeout, args.number, args.max_workers, args.method, *method_args)
+    duration, errors = start(args.host, args.port, args.timeout, args.number, args.max_workers, args.method, *method_args)
     show(duration, args.number, errors)
