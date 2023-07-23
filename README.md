@@ -2,7 +2,7 @@
 
 ---
 
-XML-RPC server options::
+XML-RPC server options:
 
 * Standard;
 * Asynchronous;
