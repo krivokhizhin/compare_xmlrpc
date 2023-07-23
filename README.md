@@ -24,9 +24,9 @@ Only standard Python libraries
 $ git clone --recurse-submodules https://github.com/krivokhizhin/compare_xmlrpc.git
 
 ---> 100%
-$ cd comparexmlrpc
+$ cd compare_xmlrpc
 
-$ docker build .
+$ docker build -t comparexmlrpc .
 
 ---> 100%
 ```
@@ -38,11 +38,11 @@ $ docker build .
 <div class="termy">
 
 ```console
-$ docker run -it --network="host" --name rpc-server-simple comparexmlrpc python3 serve_forever.py
-```
+$ docker run -d --network="host" --name rpc-server-simple comparexmlrpc python3 serve_forever.py
 
-```console
 $ docker run -it --network="host" --rm comparexmlrpc python3 -m timeit -s 'from client import start_for_timeit' 'start_for_timeit("load", 150000, max_workers=5)'
+
+$ docker stop rpc-server-simple
 ```
 
 </div>
@@ -51,11 +51,11 @@ $ docker run -it --network="host" --rm comparexmlrpc python3 -m timeit -s 'from 
 <div class="termy">
 
 ```console
-$ docker run -it --network="host" --name rpc-server-async comparexmlrpc python3 aserve_forever.py
-```
+$ docker run -d --network="host" --name rpc-server-async comparexmlrpc python3 aserve_forever.py
 
-```console
 $ docker run -it --network="host" --name rpc-client comparexmlrpc python3 -m timeit -s 'from client import start_for_timeit'  'start_for_timeit("load", 150000)'
+
+$ docker stop rpc-server-async
 ```
 
 </div>
@@ -64,11 +64,11 @@ $ docker run -it --network="host" --name rpc-client comparexmlrpc python3 -m tim
 <div class="termy">
 
 ```console
-$ docker run -it --network="host" --name rpc-server-fork10 comparexmlrpc python3 serve_forever.py --processes 10 --fork
-```
+$ docker run -d --network="host" --name rpc-server-fork10 comparexmlrpc python3 serve_forever.py --processes 10 --fork
 
-```console
-$ docker start rpc-client
+$ docker start -a rpc-client
+
+$ docker stop rpc-server-fork10
 ```
 
 </div>
@@ -77,11 +77,11 @@ $ docker start rpc-client
 <div class="termy">
 
 ```console
-$ docker run -it --network="host" --name rpc-server-pool10 comparexmlrpc python3 serve_forever.py --processes 10
-```
+$ docker run -d --network="host" --name rpc-server-pool10 comparexmlrpc python3 serve_forever.py --processes 10
 
-```console
-$ docker start rpc-client
+$ docker start -a rpc-client
+
+$ docker stop rpc-server-pool10
 ```
 
 </div>
@@ -90,11 +90,11 @@ $ docker start rpc-client
 <div class="termy">
 
 ```console
-$ docker run -it --network="host" --name rpc-server-async10 comparexmlrpc python3 aserve_forever.py --max_workers 10
-```
+$ docker run -d --network="host" --name rpc-server-async10 comparexmlrpc python3 aserve_forever.py --max_workers 10
 
-```console
-$ docker start rpc-client
+$ docker start -a rpc-client
+
+$ docker stop rpc-server-async10
 ```
 
 </div>
