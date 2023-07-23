@@ -21,7 +21,7 @@ Only standard Python libraries
 <div class="termy">
 
 ```console
-$ git clone --recurse-submodules https://github.com/krivokhizhin/comparexmlrpc.git
+$ git clone --recurse-submodules https://github.com/krivokhizhin/compare_xmlrpc.git
 
 ---> 100%
 $ cd comparexmlrpc
