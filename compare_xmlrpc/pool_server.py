@@ -37,7 +37,9 @@ def pool_process_request(request, client_address):
 
 class PoolXMLRPCServer(TCPServer):
 
-    def __init__(self, addr, process_number: int, XMLRPCDispatcher=SimpleXMLRPCDispatcher, requestHandlerClass=SimpleXMLRPCRequestHandler, logRequests=True, allow_none=False, encoding=None, bind_and_activate=True, use_builtin_types=False):
+    def __init__(self, addr, process_number: int, XMLRPCDispatcher=SimpleXMLRPCDispatcher, 
+                 requestHandlerClass=SimpleXMLRPCRequestHandler, logRequests=True, 
+                 allow_none=False, encoding=None, bind_and_activate=True, use_builtin_types=False):
         super().__init__(addr, requestHandlerClass, bind_and_activate)
         
         self.requestHandler = requestHandlerClass
@@ -59,7 +61,11 @@ class PoolXMLRPCServer(TCPServer):
         self.dispatcher.register_multicall_functions()
 
     def serve_forever(self, poll_interval=0.5) -> None:
-        self.pool = Pool(self.process_number, initializer=initializer, initargs=(self.dispatcher,self.requestHandler))
+        self.pool = Pool(
+            self.process_number, 
+            initializer=initializer, 
+            initargs=(self.dispatcher,self.requestHandler)
+        )
         super().serve_forever(poll_interval)
 
     def process_request(self, request, client_address) -> None:
